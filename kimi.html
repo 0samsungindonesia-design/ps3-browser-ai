@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kimi PS3 PKG Manager - GitHub Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;500;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --ps3-blue: #00d4ff;
+            --ps3-dark: #0a0a0a;
+            --ps3-gray: #1a1a2e;
+        }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, var(--ps3-dark) 0%, var(--ps3-gray) 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+        
+        .grid-overlay {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background-image: 
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: grid-move 20s linear infinite;
+        }
+        
+        @keyframes grid-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--ps3-blue);
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: float 15s infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) scale(1); opacity: 0; }
+        }
+        
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header XMB Style */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 30px;
+            background: rgba(0,0,0,0.6);
+            border-bottom: 3px solid var(--ps3-blue);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+            border-radius: 0 0 20px 20px;
+        }
+        
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #1a1a1a, #333);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--ps3-blue);
+            border: 3px solid var(--ps3-blue);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); }
+            50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.8); }
+        }
+        
+        .brand-text h1 {
+            font-size: 42px;
+            background: linear-gradient(90deg, #fff, var(--ps3-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .brand-text p {
+            color: #888;
+            font-size: 16px;
+            letter-spacing: 3px;
+        }
+        
+        .datetime {
+            text-align: right;
+        }
+        
+        .time {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--ps3-blue);
+        }
+        
+        .date {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* XMB Menu */
+        .xmb-nav {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            overflow-x: auto;
+            padding: 20px 0;
+        }
+        
+        .xmb-item {
+            min-width: 180px;
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            position: relative;
+        }
+        
+        .xmb-item:hover, .xmb-item.active {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: var(--ps3-blue);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+        
+        .xmb-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        
+        .xmb-label {
+            font-size: 16px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Content Area */
+        .content {
+            background: rgba(0,0,0,0.5);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--ps3-blue);
+        }
+        
+        .section-title {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .badge {
+            background: var(--ps3-blue);
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        
+        /* PKG Grid */
+        .pkg-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .pkg-card {
+            background: linear-gradient(145deg, rgba(20,20,30,0.9), rgba(10,10,20,0.95));
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .pkg-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0,212,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .pkg-card:hover::before {
+            left: 100%;
+        }
+        
+        .pkg-card:hover {
+            border-color: var(--ps3-blue);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+        }
+        
+        .pkg-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .pkg-icon-box {
+            width: 50px;
+            height: 50px;
+            background: rgba(0,212,255,0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 2px solid rgba(0,212,255,0.3);
+        }
+        
+        .pkg-meta {
+            text-align: right;
+        }
+        
+        .pkg-size {
+            background: rgba(0,212,255,0.2);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            color: var(--ps3-blue);
+            font-weight: 600;
+        }
+        
+        .pkg-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .pkg-ver {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+        
+        .pkg-desc {
+            color: #aaa;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            height: 40px;
+            overflow: hidden;
+        }
+        
+        .pkg-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+        
+        .btn-install {
+            background: linear-gradient(135deg, var(--ps3-blue), #0099cc);
+            color: #000;
+        }
+        
+        .btn-install:hover {
+            background: linear-gradient(135deg, #00eeff, #00bbee);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+        }
+        
+        .btn-info {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn-info:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: var(--ps3-blue);
+        }
+        
+        .btn-installed {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+            border: 1px solid #00ff88;
+            cursor: default;
+        }
+        
+        /* Progress Bar */
+        .progress-box {
+            margin-top: 12px;
+            display: none;
+        }
+        
+        .progress-box.active {
+            display: block;
+        }
+        
+        .progress-track {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--ps3-blue), #00ff88);
+            width: 0%;
+            transition: width 0.3s;
+            position: relative;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 1s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 11px;
+            color: var(--ps3-blue);
+        }
+        
+        /* Info Panel */
+        .sys-panel {
+            margin-top: 30px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(0,212,255,0.2);
+        }
+        
+        .panel-title {
+            color: var(--ps3-blue);
+            font-size: 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sys-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat-box {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 3px solid var(--ps3-blue);
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--ps3-blue);
+        }
+        
+        /* Upload Section */
+        .upload-zone {
+            border: 2px dashed rgba(0,212,255,0.3);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--ps3-blue);
+            background: rgba(0,212,255,0.05);
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .upload-hint {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        #file-input {
+            display: none;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.95);
+            border: 1px solid var(--ps3-blue);
+            border-radius: 10px;
+            padding: 20px;
+            min-width: 300px;
+            transform: translateX(400px);
+            transition: transform 0.3s;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.success {
+            border-color: #00ff88;
+        }
+        
+        .toast.error {
+            border-color: #ff4444;
+        }
+        
+        /* Footer */
+        .footer {
+            margin-top: 40px;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .footer a {
+            color: var(--ps3-blue);
+            text-decoration: none;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .brand-text h1 {
+                font-size: 28px;
+            }
+            
+            .xmb-nav {
+                gap: 10px;
+            }
+            
+            .xmb-item {
+                min-width: 140px;
+                padding: 15px;
+            }
+            
+            .pkg-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0,0,0,0.3);
+            border-top-color: #000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background -->
+    <div class="bg-animation">
+        <div class="grid-overlay"></div>
+        <div class="particles" id="particles"></div>
+    </div>
+    
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <div id="toast-msg">Notification</div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="brand">
+                <div class="logo">PS3</div>
+                <div class="brand-text">
+                    <h1>Kimi PKG</h1>
+                    <p>GitHub Pages Edition</p>
+                </div>
+            </div>
+            <div class="datetime">
+                <div class="time" id="clock">00:00</div>
+                <div class="date" id="date">-</div>
+            </div>
+        </header>
+
+        <!-- XMB Navigation -->
+        <nav class="xmb-nav">
+            <div class="xmb-item active" onclick="switchTab('library', this)">
+                <div class="xmb-icon">📦</div>
+                <div class="xmb-label">Library</div>
+            </div>
+            <div class="xmb-item" onclick="switchTab('upload', this)">
+                <div class="xmb-icon">⬆️</div>
+                <div class="xmb-label">Upload</div>
+            </div>
+            <div class="xmb-item" onclick="switchTab('installed', this)">
+                <div class="xmb-icon">✓</div>
+                <div class="xmb-label">Installed</div>
+            </div>
+            <div class="xmb-item" onclick="switchTab('settings', this)">
+                <div class="xmb-icon">⚙️</div>
+                <div class="xmb-label">Settings</div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="content">
+            <!-- Library View -->
+            <div id="view-library" class="view">
+                <div class="section-header">
+                    <h2 class="section-title">📦 PKG Library</h2>
+                    <span class="badge" id="count-badge">0 items</span>
+                </div>
+                
+                <div class="pkg-grid" id="pkg-grid">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+
+            <!-- Upload View -->
+            <div id="view-upload" class="view" style="display:none;">
+                <div class="section-header">
+                    <h2 class="section-title">⬆️ Upload PKG</h2>
+                </div>
+                
+                <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Click or Drop PKG files here</div>
+                    <div class="upload-hint">Supports: .pkg files up to 100MB (demo)</div>
+                </div>
+                <input type="file" id="file-input" accept=".pkg" onchange="handleFile(this.files[0])">
+                
+                <div id="upload-list"></div>
+            </div>
+
+            <!-- Installed View -->
+            <div id="view-installed" class="view" style="display:none;">
+                <div class="section-header">
+                    <h2 class="section-title">✓ Installed Packages</h2>
+                    <span class="badge" id="installed-badge">0</span>
+                </div>
+                <div class="pkg-grid" id="installed-grid"></div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="view-settings" class="view" style="display:none;">
+                <div class="section-header">
+                    <h2 class="section-title">⚙️ Settings</h2>
+                </div>
+                <div class="sys-panel">
+                    <div class="panel-title">🎮 System Configuration</div>
+                    <div class="sys-stats">
+                        <div class="stat-box">
+                            <div class="stat-label">Theme</div>
+                            <div class="stat-value">PS3 Classic</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Storage</div>
+                            <div class="stat-value">LocalStorage</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Version</div>
+                            <div class="stat-value">v1.0.0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Panel -->
+            <div class="sys-panel">
+                <div class="panel-title">📊 System Status</div>
+                <div class="sys-stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Total PKGs</div>
+                        <div class="stat-value" id="stat-total">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Installed</div>
+                        <div class="stat-value" id="stat-installed">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Pending</div>
+                        <div class="stat-value" id="stat-pending">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Storage Used</div>
+                        <div class="stat-value" id="stat-storage">0 MB</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Made with ❤️ for PS3 Community | 
+            <a href="https://github.com" target="_blank">View on GitHub</a> | 
+            Works offline via GitHub Pages</p>
+        </footer>
+    </div>
+
+    <script>
+        // Data Storage (using localStorage)
+        const Storage = {
+            get: (key) => JSON.parse(localStorage.getItem(key) || '[]'),
+            set: (key, val) => localStorage.setItem(key, JSON.stringify(val)),
+            add: (key, item) => {
+                const data = Storage.get(key);
+                data.push(item);
+                Storage.set(key, data);
+            },
+            remove: (key, id) => {
+                const data = Storage.get(key).filter(item => item.id !== id);
+                Storage.set(key, data);
+            }
+        };
+
+        // Initial Data
+        const defaultPackages = [
+            { id: 'pkg1', name: 'MultiMAN', version: '04.85.01', size: '45 MB', icon: '📁', desc: 'File manager and game launcher', installed: false, date: new Date().toISOString() },
+            { id: 'pkg2', name: 'webMAN MOD', version: '1.47.45', size: '12 MB', icon: '🌐', desc: 'Web server and FTP for PS3', installed: false, date: new Date().toISOString() },
+            { id: 'pkg3', name: 'RetroArch', version: '1.9.0', size: '156 MB', icon: '🎮', desc: 'Multi-system emulator', installed: false, date: new Date().toISOString() },
+            { id: 'pkg4', name: 'PS3HEN', version: '3.2.0', size: '8 MB', icon: '🔓', desc: 'Homebrew enabler', installed: false, date: new Date().toISOString() },
+            { id: 'pkg5', name: 'Movian', version: '5.0.0', size: '34 MB', icon: '🎬', desc: 'Media player for PS3', installed: false, date: new Date().toISOString() }
+        ];
+
+        // Initialize
+        if (Storage.get('packages').length === 0) {
+            Storage.set('packages', defaultPackages);
+        }
+
+        let currentTab = 'library';
+        let installing = new Set();
+
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('date').textContent = now.toLocaleDateString('id-ID', {weekday: 'short', day:'numeric', month:'short'});
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Create particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 15 + 's';
+                p.style.animationDuration = (10 + Math.random() * 10) + 's';
+                container.appendChild(p);
+            }
+        }
+        createParticles();
+
+        // Switch Tab
+        function switchTab(tab, element) {
+            currentTab = tab;
+            
+            document.querySelectorAll('.xmb-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            
+            document.querySelectorAll('.view').forEach(el => el.style.display = 'none');
+            document.getElementById(`view-${tab}`).style.display = 'block';
+            
+            if (tab === 'library') renderLibrary();
+            if (tab === 'installed') renderInstalled();
+        }
+
+        // Render Library
+        function renderLibrary() {
+            const packages = Storage.get('packages');
+            const grid = document.getElementById('pkg-grid');
+            
+            document.getElementById('count-badge').textContent = `${packages.length} items`;
+            
+            grid.innerHTML = packages.map(pkg => `
+                <div class="pkg-card">
+                    <div class="pkg-header">
+                        <div class="pkg-icon-box">${pkg.icon}</div>
+                        <div class="pkg-meta">
+                            <div class="pkg-size">${pkg.size}</div>
+                        </div>
+                    </div>
+                    <div class="pkg-name">${pkg.name}</div>
+                    <div class="pkg-ver">v${pkg.version}</div>
+                    <div class="pkg-desc">${pkg.desc}</div>
+                    <div class="pkg-actions">
+                        ${pkg.installed ? 
+                            `<button class="btn btn-installed" disabled>✓ Installed</button>` :
+                            `<button class="btn btn-install" onclick="install('${pkg.id}')" id="btn-${pkg.id}">
+                                ${installing.has(pkg.id) ? '<span class="spinner"></span>' : 'Install'}
+                            </button>`
+                        }
+                        <button class="btn btn-info" onclick="info('${pkg.id}')">Info</button>
+                    </div>
+                    <div class="progress-box ${installing.has(pkg.id) ? 'active' : ''}" id="prog-${pkg.id}">
+                        <div class="progress-track">
+                            <div class="progress-bar" id="bar-${pkg.id}" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span>Installing...</span>
+                            <span id="pct-${pkg.id}">0%</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            updateStats();
+        }
+
+        // Render Installed
+        function renderInstalled() {
+            const installed = Storage.get('packages').filter(p => p.installed);
+            const grid = document.getElementById('installed-grid');
+            
+            document.getElementById('installed-badge').textContent = installed.length;
+            
+            if (installed.length === 0) {
+                grid.innerHTML = '<div style="text-align:center; color:#666; padding:40px;">No packages installed yet</div>';
+                return;
+            }
+            
+            grid.innerHTML = installed.map(pkg => `
+                <div class="pkg-card">
+                    <div class="pkg-header">
+                        <div class="pkg-icon-box">${pkg.icon}</div>
+                        <div class="pkg-meta">
+                            <div class="pkg-size">${pkg.size}</div>
+                        </div>
+                    </div>
+                    <div class="pkg-name">${pkg.name}</div>
+                    <div class="pkg-ver">v${pkg.version}</div>
+                    <div class="pkg-desc">${pkg.desc}</div>
+                    <div class="pkg-actions">
+                        <button class="btn btn-info" onclick="uninstall('${pkg.id}')" style="background:rgba(255,68,68,0.2); color:#ff4444; border-color:#ff4444;">Uninstall</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Install Package
+        function install(id) {
+            if (installing.has(id)) return;
+            
+            installing.add(id);
+            const btn = document.getElementById(`btn-${id}`);
+            const prog = document.getElementById(`prog-${id}`);
+            const bar = document.getElementById(`bar-${id}`);
+            const pct = document.getElementById(`pct-${id}`);
+            
+            btn.innerHTML = '<span class="spinner"></span>';
+            prog.classList.add('active');
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 20;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    setTimeout(() => {
+                        const packages = Storage.get('packages');
+                        const pkg = packages.find(p => p.id === id);
+                        pkg.installed = true;
+                        Storage.set('packages', packages);
+                        
+                        installing.delete(id);
+                        showToast(`✓ ${pkg.name} installed successfully!`, 'success');
+                        renderLibrary();
+                    }, 500);
+                }
+                
+                bar.style.width = progress + '%';
+                pct.textContent = Math.floor(progress) + '%';
+            }, 200);
+        }
+
+        // Uninstall
+        function uninstall(id) {
+            const packages = Storage.get('packages');
+            const pkg = packages.find(p => p.id === id);
+            pkg.installed = false;
+            Storage.set('packages', packages);
+            
+            showToast(`✓ ${pkg.name} uninstalled`, 'success');
+            renderInstalled();
+            updateStats();
+        }
+
+        // Show Info
+        function info(id) {
+            const pkg = Storage.get('packages').find(p => p.id === id);
+            showToast(`ℹ ${pkg.name}: ${pkg.desc}`, 'success');
+        }
+
+        // Handle File Upload
+        function handleFile(file) {
+            if (!file || !file.name.endsWith('.pkg')) {
+                showToast('❌ Please select a valid PKG file', 'error');
+                return;
+            }
+            
+            const size = (file.size / (1024*1024)).toFixed(1) + ' MB';
+            const newPkg = {
+                id: 'pkg' + Date.now(),
+                name: file.name.replace('.pkg', ''),
+                version: '1.0.0',
+                size: size,
+                icon: '📦',
+                desc: 'Custom uploaded package',
+                installed: false,
+                date: new Date().toISOString()
+            };
+            
+            Storage.add('packages', newPkg);
+            showToast(`✓ ${newPkg.name} added to library!`, 'success');
+            
+            // Show in upload list
+            const list = document.getElementById('upload-list');
+            const item = document.createElement('div');
+            item.className = 'pkg-card';
+            item.style.marginTop = '20px';
+            item.innerHTML = `
+                <div class="pkg-name">${newPkg.name}</div>
+                <div class="pkg-ver">${size} • Ready to install</div>
+            `;
+            list.appendChild(item);
+            
+            updateStats();
+        }
+
+        // Drag & Drop
+        const uploadZone = document.getElementById('upload-zone');
+        
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+        
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+        
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            if (e.dataTransfer.files[0]) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Update Stats
+        function updateStats() {
+            const packages = Storage.get('packages');
+            const installed = packages.filter(p => p.installed).length;
+            const totalSize = packages.reduce((acc, p) => acc + parseFloat(p.size), 0);
+            
+            document.getElementById('stat-total').textContent = packages.length;
+            document.getElementById('stat-installed').textContent = installed;
+            document.getElementById('stat-pending').textContent = packages.length - installed;
+            document.getElementById('stat-storage').textContent = totalSize.toFixed(0) + ' MB';
+        }
+
+        // Toast Notification
+        function showToast(msg, type) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            
+            toast.className = 'toast ' + type;
+            toastMsg.textContent = msg;
+            
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Initial Render
+        renderLibrary();
+        updateStats();
+    </script>
+</body>
+</html>
